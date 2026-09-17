@@ -7,8 +7,6 @@ import Filters from "./Filters";
 import SummaryCard from "./SummaryCard";
 import CategoryBreakdown from "./CategoryBreakdown";
 import TransactionList from "./TransactionList";
-import QuickAddForm, { type QuickAddValues } from "./QuickAddForm";
-import QuickAddDrawer from "./QuickAddDrawer";
 import MobileNav, { type MobileTab } from "./MobileNav";
 
 export default function Dashboard({
@@ -27,7 +25,6 @@ export default function Dashboard({
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [loading, setLoading] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("overview");
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -60,24 +57,6 @@ export default function Dashboard({
     return () => clearTimeout(handle);
   }, [refresh, keyword]);
 
-  async function handleAddExpense(values: QuickAddValues) {
-    const res = await fetch("/api/expenses", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount: Number(values.amount),
-        category: values.category,
-        description: values.description,
-        txDate: values.txDate,
-      }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => null);
-      throw new Error(data?.error ?? "Failed to add expense");
-    }
-    await refresh();
-  }
-
   return (
     <div className="min-h-screen pb-24 md:pb-10">
       <Header />
@@ -94,9 +73,9 @@ export default function Dashboard({
           />
         </div>
 
-        {/* Desktop: full grid. Mobile: tab-switched sections. */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div className={`space-y-6 md:col-span-2 ${mobileTab === "overview" ? "" : "hidden md:block"}`}>
+        {/* Desktop: single column. Mobile: tab-switched sections. */}
+        <div className="grid grid-cols-1 gap-6">
+          <div className={`space-y-6 ${mobileTab === "overview" ? "" : "hidden md:block"}`}>
             <SummaryCard summary={summary} yearMonth={yearMonth} loading={loading} />
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <CategoryBreakdown summary={summary} loading={loading} />
@@ -111,22 +90,13 @@ export default function Dashboard({
             </div>
           </div>
 
-          <div className={mobileTab === "transactions" ? "" : "hidden md:block"}>
-            <div className="hidden md:block">
-              <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm sm:p-6">
-                <h3 className="mb-4 text-base font-semibold">Quick add</h3>
-                <QuickAddForm onSubmit={handleAddExpense} />
-              </div>
-            </div>
-            <div className="md:hidden">
-              <TransactionList transactions={transactions} loading={loading} />
-            </div>
+          <div className={`md:hidden ${mobileTab === "transactions" ? "" : "hidden"}`}>
+            <TransactionList transactions={transactions} loading={loading} />
           </div>
         </div>
       </main>
 
-      <MobileNav active={mobileTab} onChange={setMobileTab} onAdd={() => setDrawerOpen(true)} />
-      <QuickAddDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onSubmit={handleAddExpense} />
+      <MobileNav active={mobileTab} onChange={setMobileTab} />
     </div>
   );
 }

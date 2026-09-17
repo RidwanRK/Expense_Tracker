@@ -1,17 +1,15 @@
 "use client";
 
-import { LayoutDashboard, ListFilter, PlusCircle } from "lucide-react";
+import { LayoutDashboard, ListFilter } from "lucide-react";
 
 export type MobileTab = "overview" | "transactions";
 
 export default function MobileNav({
   active,
   onChange,
-  onAdd,
 }: {
   active: MobileTab;
   onChange: (tab: MobileTab) => void;
-  onAdd: () => void;
 }) {
   return (
     <nav
@@ -27,14 +25,6 @@ export default function MobileNav({
         >
           <LayoutDashboard className="h-5 w-5" aria-hidden />
           Overview
-        </button>
-
-        <button
-          onClick={onAdd}
-          aria-label="Add expense"
-          className="-mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:bg-indigo-500"
-        >
-          <PlusCircle className="h-7 w-7" aria-hidden />
         </button>
 
         <button

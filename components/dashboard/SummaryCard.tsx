@@ -2,11 +2,11 @@ import { TrendingUp, Receipt } from "lucide-react";
 import type { MonthlySummary } from "@/lib/types";
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  const amount = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
+  return `${amount} Taka`;
 }
 
 function formatMonthLabel(yearMonth: string): string {

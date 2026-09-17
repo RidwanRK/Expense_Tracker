@@ -52,7 +52,7 @@ export function createMcpServer(): McpServer {
           {
             type: "text",
             text:
-              `Logged $${transaction.amount.toFixed(2)} for "${transaction.description}" ` +
+              `Logged ${transaction.amount.toFixed(2)} Taka for "${transaction.description}" ` +
               `under ${transaction.category} on ${transaction.txDate} (id: ${transaction.id}).`,
           },
         ],
@@ -79,12 +79,12 @@ export function createMcpServer(): McpServer {
       const breakdownText = summary.categoryBreakdown
         .map(
           (row) =>
-            `  - ${row.category}: $${row.total.toFixed(2)} (${row.percentage.toFixed(1)}%, ${row.count} txns)`
+            `  - ${row.category}: ${row.total.toFixed(2)} Taka (${row.percentage.toFixed(1)}%, ${row.count} txns)`
         )
         .join("\n");
 
       const text =
-        `Summary for ${yearMonth}: $${summary.totalSpent.toFixed(2)} total across ` +
+        `Summary for ${yearMonth}: ${summary.totalSpent.toFixed(2)} Taka total across ` +
         `${summary.transactionCount} transaction(s).` +
         (breakdownText ? `\nBy category:\n${breakdownText}` : "\nNo transactions recorded.");
 
@@ -121,7 +121,7 @@ export function createMcpServer(): McpServer {
           : results
               .map(
                 (tx) =>
-                  `- ${tx.txDate} · ${tx.category} · $${tx.amount.toFixed(2)} · ${tx.description} (id: ${tx.id})`
+                  `- ${tx.txDate} · ${tx.category} · ${tx.amount.toFixed(2)} Taka · ${tx.description} (id: ${tx.id})`
               )
               .join("\n");
 
