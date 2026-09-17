@@ -1,4 +1,4 @@
-import { Receipt } from "lucide-react";
+import { Pencil, Receipt } from "lucide-react";
 import type { Transaction } from "@/lib/types";
 import { categoryStyle } from "@/lib/category-styles";
 import { formatCurrency } from "./SummaryCard";
@@ -18,9 +18,11 @@ function formatDate(iso: string): string {
 export default function TransactionList({
   transactions,
   loading,
+  onEdit,
 }: {
   transactions: Transaction[];
   loading: boolean;
+  onEdit?: (transaction: Transaction) => void;
 }) {
   return (
     <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm sm:p-6">
@@ -55,6 +57,15 @@ export default function TransactionList({
                 <span className="shrink-0 text-sm font-semibold tabular-nums">
                   {formatCurrency(tx.amount)}
                 </span>
+                {onEdit && (
+                  <button
+                    onClick={() => onEdit(tx)}
+                    aria-label={`Edit ${tx.description}`}
+                    className="shrink-0 rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                  >
+                    <Pencil className="h-4 w-4" aria-hidden />
+                  </button>
+                )}
               </li>
             );
           })}

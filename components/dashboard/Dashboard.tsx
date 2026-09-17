@@ -8,6 +8,7 @@ import SummaryCard from "./SummaryCard";
 import CategoryBreakdown from "./CategoryBreakdown";
 import TransactionList from "./TransactionList";
 import MobileNav, { type MobileTab } from "./MobileNav";
+import EditExpenseModal, { type EditExpenseValues } from "./EditExpenseModal";
 
 export default function Dashboard({
   initialYearMonth,
@@ -25,6 +26,7 @@ export default function Dashboard({
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [loading, setLoading] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("overview");
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -57,6 +59,24 @@ export default function Dashboard({
     return () => clearTimeout(handle);
   }, [refresh, keyword]);
 
+  async function handleUpdateExpense(id: string, values: EditExpenseValues) {
+    const res = await fetch(`/api/expenses/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: Number(values.amount),
+        category: values.category,
+        description: values.description,
+        txDate: values.txDate,
+      }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      throw new Error(data?.error ?? "Failed to update expense");
+    }
+    await refresh();
+  }
+
   return (
     <div className="min-h-screen pb-24 md:pb-10">
       <Header />
@@ -80,23 +100,43 @@ export default function Dashboard({
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <CategoryBreakdown summary={summary} loading={loading} />
               <div className="hidden sm:block">
-                <TransactionList transactions={transactions} loading={loading} />
+                <TransactionList
+                  transactions={transactions}
+                  loading={loading}
+                  onEdit={setEditingTransaction}
+                />
               </div>
             </div>
             <div className="sm:hidden">
               {mobileTab === "overview" && (
-                <TransactionList transactions={transactions.slice(0, 5)} loading={loading} />
+                <TransactionList
+                  transactions={transactions.slice(0, 5)}
+                  loading={loading}
+                  onEdit={setEditingTransaction}
+                />
               )}
             </div>
           </div>
 
           <div className={`md:hidden ${mobileTab === "transactions" ? "" : "hidden"}`}>
-            <TransactionList transactions={transactions} loading={loading} />
+            <TransactionList
+              transactions={transactions}
+              loading={loading}
+              onEdit={setEditingTransaction}
+            />
           </div>
         </div>
       </main>
 
       <MobileNav active={mobileTab} onChange={setMobileTab} />
+      {editingTransaction && (
+        <EditExpenseModal
+          key={editingTransaction.id}
+          transaction={editingTransaction}
+          onClose={() => setEditingTransaction(null)}
+          onSubmit={handleUpdateExpense}
+        />
+      )}
     </div>
   );
 }

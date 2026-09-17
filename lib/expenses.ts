@@ -47,6 +47,26 @@ export async function logExpense(input: LogExpenseInput): Promise<Transaction> {
   return toTransaction({ ...doc, _id: result.insertedId });
 }
 
+export interface UpdateExpenseInput {
+  amount: number;
+  category: ExpenseCategory;
+  description: string;
+  txDate: string;
+}
+
+/** Updates an existing transaction. Returns the updated transaction, or null if no transaction has that id. */
+export async function updateExpense(
+  id: string,
+  input: UpdateExpenseInput
+): Promise<Transaction | null> {
+  if (!ObjectId.isValid(id)) return null;
+  const db = await getDb();
+  const updated = await db
+    .collection<TransactionDocument>(TRANSACTIONS_COLLECTION)
+    .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: input }, { returnDocument: "after" });
+  return updated ? toTransaction(updated as TransactionDocument & { _id: ObjectId }) : null;
+}
+
 /** Fetches the most recent transactions, newest first. */
 export async function listRecentExpenses(limit = 20): Promise<Transaction[]> {
   const db = await getDb();
