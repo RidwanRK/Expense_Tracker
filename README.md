@@ -91,6 +91,7 @@ Exposed at `POST/GET/DELETE /api/mcp` (Streamable HTTP, stateless — a new serv
 |---|---|---|
 | `log_expense` | `amount`, `category`, `description`, `txDate?` | Inserts a transaction |
 | `get_monthly_summary` | `yearMonth` (`"YYYY-MM"`) | Total spend, count, category breakdown with percentages |
+| `update_expense` | `id`, `amount?`, `category?`, `description?`, `txDate?` | Edits an existing transaction; only provided fields change |
 | `search_expenses` | `keyword?`, `category?`, `limit?` | Recent matching transactions |
 
 ### Connecting an AI client

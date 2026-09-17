@@ -48,22 +48,28 @@ export async function logExpense(input: LogExpenseInput): Promise<Transaction> {
 }
 
 export interface UpdateExpenseInput {
-  amount: number;
-  category: ExpenseCategory;
-  description: string;
-  txDate: string;
+  amount?: number;
+  category?: ExpenseCategory;
+  description?: string;
+  txDate?: string;
 }
 
-/** Updates an existing transaction. Returns the updated transaction, or null if no transaction has that id. */
+/**
+ * Updates an existing transaction. Only the provided fields are changed.
+ * Returns the updated transaction, or null if no transaction has that id.
+ */
 export async function updateExpense(
   id: string,
   input: UpdateExpenseInput
 ): Promise<Transaction | null> {
   if (!ObjectId.isValid(id)) return null;
+  const fields = Object.fromEntries(
+    Object.entries(input).filter(([, value]) => value !== undefined)
+  );
   const db = await getDb();
   const updated = await db
     .collection<TransactionDocument>(TRANSACTIONS_COLLECTION)
-    .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: input }, { returnDocument: "after" });
+    .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: fields }, { returnDocument: "after" });
   return updated ? toTransaction(updated as TransactionDocument & { _id: ObjectId }) : null;
 }
 

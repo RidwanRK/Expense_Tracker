@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { getMonthlySummary, logExpense, searchExpenses, todayIso } from "./expenses";
+import { getMonthlySummary, logExpense, searchExpenses, todayIso, updateExpense } from "./expenses";
 import { EXPENSE_CATEGORIES } from "./types";
 
 /**
@@ -91,6 +91,63 @@ export function createMcpServer(): McpServer {
       return {
         content: [{ type: "text", text }],
         structuredContent: { ...summary },
+      };
+    }
+  );
+
+  server.registerTool(
+    "update_expense",
+    {
+      title: "Update expense",
+      description:
+        "Edit an existing expense transaction by id. Only the fields provided are changed; " +
+        "omit any field to leave it as-is. Use search_expenses to find a transaction's id first.",
+      inputSchema: {
+        id: z.string().describe("The transaction id (from log_expense/search_expenses/get_monthly_summary results)"),
+        amount: z.number().positive().optional().describe("New amount, if it's changing"),
+        category: z
+          .enum(EXPENSE_CATEGORIES)
+          .optional()
+          .describe(`New category, if it's changing. One of: ${EXPENSE_CATEGORIES.join(", ")}`),
+        description: z
+          .string()
+          .min(1)
+          .max(500)
+          .optional()
+          .describe("New description, if it's changing"),
+        txDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional()
+          .describe("New transaction date as YYYY-MM-DD, if it's changing"),
+      },
+    },
+    async ({ id, amount, category, description, txDate }) => {
+      if (amount === undefined && category === undefined && description === undefined && txDate === undefined) {
+        return {
+          content: [{ type: "text", text: "No fields were provided to update." }],
+          isError: true,
+        };
+      }
+
+      const transaction = await updateExpense(id, { amount, category, description, txDate });
+      if (!transaction) {
+        return {
+          content: [{ type: "text", text: `No transaction found with id "${id}".` }],
+          isError: true,
+        };
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text:
+              `Updated transaction ${transaction.id}: ${transaction.amount.toFixed(2)} Taka for ` +
+              `"${transaction.description}" under ${transaction.category} on ${transaction.txDate}.`,
+          },
+        ],
+        structuredContent: { transaction },
       };
     }
   );
